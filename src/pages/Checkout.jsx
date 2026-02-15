@@ -67,7 +67,7 @@ const Checkout = ({ cart, clearCart, currency }) => {
 
     try {
       // ✅ Envoyer la commande au backend
-      const response = await fetch('http://localhost:5000/api/orders/create', {
+      const response = await fetch('https://4night-backend.onrender.com/api/orders/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -203,7 +203,7 @@ const Checkout = ({ cart, clearCart, currency }) => {
 
                   <div>
                     <label className="block text-white text-sm font-medium mb-2">
-                      Email (optionnel)
+                      Email *
                     </label>
                     <input
                       type="email"
