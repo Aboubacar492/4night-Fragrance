@@ -52,60 +52,60 @@ const Checkout = ({ cart, clearCart, currency }) => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!validateForm()) {
-      return;
+  if (!validateForm()) {
+    return;
+  }
+
+  if (cart.length === 0) {
+    alert('Votre panier est vide');
+    return;
+  }
+
+  setIsProcessing(true);
+
+  try {
+    // ✅ URL Render avec HTTPS
+    const response = await fetch('https://fournight-backend.onrender.com/api/orders/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        customer: formData,
+        cart: cart,
+        total: total,
+        currency: currency,
+        paymentMethod: 'Paiement à la livraison'
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status}`);
     }
 
-    if (cart.length === 0) {
-      alert('Votre panier est vide');
-      return;
-    }
+    const data = await response.json();
 
-    setIsProcessing(true);
-
-    try {
-      // ✅ Envoyer la commande au backend
-      const response = await fetch('https://4night-backend.onrender.com/api/orders/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          customer: formData,
-          cart: cart,
-          total: total,
-          currency: currency,
-          paymentMethod: 'Paiement à la livraison'
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // ✅ Commande créée avec succès
-        const orderNumber = data.order.orderNumber;
-        
-        // Vider le panier
-        clearCart();
-        
-        // Message de succès
-        alert(`✅ Commande #${orderNumber} créée avec succès !\n\nNous vous contacterons sous peu pour confirmer votre commande.\n\nMontant : ${total.toLocaleString()} ${currencySymbol}\nPaiement à la livraison`);
-        
-        // Rediriger vers l'accueil
-        navigate('/');
-      } else {
-        alert('❌ Erreur: ' + (data.message || 'Une erreur est survenue'));
-      }
+    if (data.success) {
+      const orderNumber = data.order.orderNumber;
       
-    } catch (error) {
-      console.error('Erreur lors de la commande:', error);
-      alert('❌ Impossible de créer la commande. Vérifiez que le serveur backend est démarré.\n\nCommande : npm start dans le dossier backend');
-    } finally {
-      setIsProcessing(false);
+      clearCart();
+      
+      alert(`✅ Commande #${orderNumber} créée avec succès !\n\nNous vous contacterons sous peu pour confirmer votre commande.\n\nMontant : ${total.toLocaleString()} ${currencySymbol}\nPaiement à la livraison`);
+      
+      navigate('/');
+    } else {
+      alert('❌ Erreur: ' + (data.message || 'Une erreur est survenue'));
     }
-  };
+    
+  } catch (error) {
+    console.error('Erreur lors de la commande:', error);
+    alert('❌ Impossible de créer la commande.\n\nLe serveur peut être en train de se réveiller (peut prendre 1 minute).\n\nVeuillez réessayer dans quelques secondes.');
+  } finally {
+    setIsProcessing(false);
+  }
+};
 
   if (cart.length === 0) {
     return (
